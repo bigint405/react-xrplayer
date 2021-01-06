@@ -14,6 +14,7 @@ class EmbeddedBox {
         this.meshReady = false;
         this.showTypeChangable = false;
         this.showType = 'embed';
+        this.distance = 500;
 
         this.dragging2d = false;
         this.startX = 0;
@@ -31,6 +32,11 @@ class EmbeddedBox {
             this.planeMesh.position.set(pos.x, pos.y, pos.z);
             this.planeMesh.lookAt(0, 0, 0);
         }
+    }
+
+    setXYZ = (x, y, z) => {
+        this.planeMesh.position.set(x, y, z);
+        this.planeMesh.lookAt(0, 0, 0);
     }
 
     getPosition = () => {
@@ -129,6 +135,7 @@ class EmbeddedBox {
         // document.body.appendChild(this.canvas)
         let sup = this;
         this.canvas.onMouseDown = (event) => {
+            this.callback && this.callback();
             if (sup.draggable === false) return;
             sup.dragging2d = true;
             sup.startX = event.clientX;
@@ -184,9 +191,9 @@ class EmbeddedBox {
         let phi = THREE.Math.degToRad(lat);
         let theta = THREE.Math.degToRad(lon);
         return new THREE.Vector3(
-            500 * Math.sin(phi) * Math.sin(theta),
-            500 * Math.cos(phi),
-            500 * Math.sin(phi) * Math.cos(theta)
+            this.distance * Math.sin(phi) * Math.sin(theta),
+            this.distance * Math.cos(phi),
+            this.distance * Math.sin(phi) * Math.cos(theta)
         );
     };
 

@@ -10,6 +10,8 @@ class CameraTween {
         this.duration = null;
         this.easing = null;
         this.tween = null;
+        this.onUpdate = null;
+        this.focus = new THREE.Vector3(0, 0, 0);
 
         this.camera = camera;
         this.distance = cameraDistance;
@@ -65,6 +67,9 @@ class CameraTween {
         if (this.pos0.hasOwnProperty("x")) {
             this.posType = 1
         }
+        if (this.pos0.hasOwnProperty("lat")) {
+            this.posType = 2;
+        }
         if (this.pos0.hasOwnProperty("fov")) {
             this.fovChange = true;
         }
@@ -74,7 +79,12 @@ class CameraTween {
 
         const cameraTween = this;
         this.tween.onUpdate((pos) => {
-            if (cameraTween.posType === 0) {
+            if (this.onUpdate)
+            {
+                this.onUpdate(pos);
+            }
+
+            if (cameraTween.posType === 2) {
                 if (!this.disChange) {
                     pos.distance = this.distance;
                 }
@@ -83,7 +93,7 @@ class CameraTween {
                 cameraTween.camera.position.y = newPos.y;
                 cameraTween.camera.position.z = newPos.z;
             }
-            else {
+            else if (cameraTween.posType === 1) {
                 cameraTween.camera.position.x = pos.x;
                 cameraTween.camera.position.y = pos.y;
                 cameraTween.camera.position.z = pos.z;
@@ -94,6 +104,12 @@ class CameraTween {
             }
             cameraTween.camera.lookAt(cameraTween.camera.target);
         });
+    }
+
+    setFocus = (focus) => {
+        this.focus.x = focus.x;
+        this.focus.y = focus.y;
+        this.focus.z = focus.z;
     }
 
     getEasingFunc = (name) => {
@@ -111,12 +127,12 @@ class CameraTween {
     //经纬度到xyz的转换
     spherical2Cartesian = (lat, lon, distance) => {
         const pos = { x: 0, y: 0, z: 0 };
-        lat = Math.max(this.fovDownEdge, Math.min(this.fovTopEdge, lat));
+        // lat = Math.max(this.fovDownEdge, Math.min(this.fovTopEdge, lat));
         const phi = THREE.Math.degToRad(lat);
         const theta = THREE.Math.degToRad(lon);
-        pos.x = distance * Math.sin(phi) * Math.cos(theta);
-        pos.y = distance * Math.cos(phi);
-        pos.z = distance * Math.sin(phi) * Math.sin(theta);
+        pos.x = distance * Math.sin(phi) * Math.sin(theta) + this.focus.x;
+        pos.y = distance * Math.cos(phi) + this.focus.y;
+        pos.z = distance * Math.sin(phi) * Math.cos(theta) + this.focus.z;
         return pos;
     }
 

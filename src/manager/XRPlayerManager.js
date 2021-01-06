@@ -110,7 +110,7 @@ class XRPlayerManager {
             scene_texture_resource: textureResource,
             axes_helper_display: isAxesHelperDisplay,
         } = this.props;
-        const { panoramic_type = '360', radius = 500, height = 1000 } = textureResource;
+        const { panoramic_type = '360', radius = 500, height = 1000 } = textureResource[0];
         this.sceneContainer = document.getElementById('video');
         let geometry;
         if (panoramic_type === '180') {
@@ -120,7 +120,7 @@ class XRPlayerManager {
         }
         geometry.scale(-1, 1, 1);
         this.sceneTextureHelper = new TextureHelper(this.sceneContainer);
-        let texture = this.sceneTextureHelper.loadTexture(textureResource);
+        let texture = this.sceneTextureHelper.loadTexture(textureResource[0]);
         let material = new THREE.MeshBasicMaterial({ map: texture });
         this.sceneMesh = new THREE.Mesh(geometry, material);
         this.scene = new THREE.Scene();
@@ -196,7 +196,7 @@ class XRPlayerManager {
      * @function
      * @name XRPlayerManager#loadConfig
      * @description 从一个配置对象中初始化整个场景
-     * @param {object}} config 
+     * @param {object} config
      */
     loadConfig = (config) => {
         this.senceConfig = config;
@@ -285,12 +285,22 @@ class XRPlayerManager {
     }
 
     /****************************全景场景相关控制接口************************* */
+    getScene = () => {
+        return this.scene;
+    }
+
     setSenceResource = (res) => {
         this.sceneTextureHelper && this.sceneTextureHelper.unloadResource();
         this.sceneTextureHelper = new TextureHelper(this.sceneContainer);
         let texture = this.sceneTextureHelper.loadTexture(res);
         let material = new THREE.MeshBasicMaterial({ map: texture });
         this.sceneMesh.material = material;
+    }
+
+    setFocus = (focus) => {
+        this.innerViewControls.focus.x = focus.x;
+        this.innerViewControls.focus.y = focus.y;
+        this.innerViewControls.focus.z = focus.z;
     }
 
     /**
@@ -441,7 +451,6 @@ class XRPlayerManager {
     removeAllModel = () => {
         this.centerModelHelper.removeAllModel();
     }
-
 
     /**************************相机移动相关接口************************* */
 
@@ -810,10 +819,10 @@ class XRPlayerManager {
         2.  stop或自动结束之后再调用start重播
     params的格式:
     {
-        pos0, pos1, duration,           必需
+        start, end, duration,           必需
         easing, callback                非必需（easing是速度变化的方式，详见https://www.createjs.com/docs/tweenjs/classes/Ease.html）
     }
-    pos0、pos1的格式
+    start、end的格式
     {
         lat, lon,                       必需
         fov                             非必需
@@ -841,7 +850,7 @@ class XRPlayerManager {
             cameraTweens.push(animation);
         });
         var cameraTweenGroup = new CameraTweenGroup(cameraTweens,
-            100, this.innerViewControls);
+            450, this.innerViewControls);
         cameraTweenGroup.onCameraAnimationEnded = (key) => {
             this.onCameraAnimationEnded &&
                 this.onCameraAnimationEnded(key);
@@ -859,8 +868,8 @@ class XRPlayerManager {
         return cameraTweenGroup;
     }
 
-    createCameraAnimation = (params) => {  //因为存在入场动画，导致设置相机动画时distance是450，这里直接改为100
-        var cameraTween = new CameraTween(params, this.camera, 100,
+    createCameraAnimation = (params) => {
+        var cameraTween = new CameraTween(params, this.camera, 450,
             this.innerViewControls, this.cameraTweenStatus);
         cameraTween.key = params.key;
         return cameraTween;
@@ -943,11 +952,11 @@ class XRPlayerManager {
 
     spherical2Cartesian = (lat, lon, distance) => {
         let pos = { x: 0, y: 0, z: 0 };
-        const phi = THREE.Math.degToRad(90 - lat);
+        const phi = THREE.Math.degToRad(lat);
         const theta = THREE.Math.degToRad(lon);
-        pos.x = distance * Math.sin(phi) * Math.cos(theta);
+        pos.x = distance * Math.sin(phi) * Math.sin(theta);
         pos.y = distance * Math.cos(phi);
-        pos.z = distance * Math.sin(phi) * Math.sin(theta);
+        pos.z = distance * Math.sin(phi) * Math.cos(theta);
         return pos;
     }
 }

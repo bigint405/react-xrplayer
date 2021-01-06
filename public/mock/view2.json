@@ -1,0 +1,301 @@
+[
+    {
+        "camera_fov": 100,
+        "auto_rotate_speed": 1.0,
+        "enable_auto_rotate": false,
+        "volume": 0.9,
+        "muted": false,
+        "res_urls": [
+            {
+                "type": "hls",
+                "res_url": "/react-xrplayer/123.m3u8",
+                "panoramic_type": "360",
+                "radius": 500
+            }
+        ],
+        "model_list": [
+        ],
+        "hot_spot_list": [
+            [
+                "chang_zheng_5_hao_jian_jie",
+                {
+                    "lat": 93.8,
+                    "lon": -132.7,
+                    "position": "top",
+                    "animate": true,
+                    "name": "长征5号系列运载火箭简介",
+                    "title": "长征5号系列运载火箭简介",
+                    "res_url": "https://live360.oss-cn-beijing.aliyuncs.com/xr/icons/hotspot_video.png",
+                    "img_url": "https://bkimg.cdn.bcebos.com/pic/a8014c086e061d950a7b440cbabe1dd162d9f2d35ce6?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UyMjA=,g_7,xp_5,yp_5",
+                    "img_height": 100,
+                    "img_width": 50
+                }
+            ],
+            [
+                "chang_e_5_hao_jian_jie",
+                {
+                    "lat": 93.8,
+                    "lon": -50.7,
+                    "position": "top",
+                    "animate": true,
+                    "name": "嫦娥5号简介",
+                    "title": "嫦娥5号简介",
+                    "res_url": "https://live360.oss-cn-beijing.aliyuncs.com/xr/icons/hotspot_video.png",
+                    "img_url": "https://bkimg.cdn.bcebos.com/pic/86d6277f9e2f07082838794b706eaf99a9014c08546f?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UyMjA=,g_7,xp_5,yp_5",
+                    "img_height": 80,
+                    "img_width": 120
+                }
+            ],
+            [
+                "wen_chang_jian_jie",
+                {
+                    "lat": 90,
+                    "lon": 90,
+                    "position": "top",
+                    "animate": true,
+                    "name": "文昌卫星发射中心简介",
+                    "title": "文昌卫星发射中心简介",
+                    "res_url": "https://live360.oss-cn-beijing.aliyuncs.com/xr/icons/hotspot_video.png",
+                    "img_url": "https://bkimg.cdn.bcebos.com/pic/78310a55b319ebc4b7456183436cd8fc1e178a82b8dd?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UxNTA=,g_7,xp_5,yp_5",
+                    "img_height": 50,
+                    "img_width": 100
+                }
+            ]
+        ],
+        "event_list": [
+            [
+                "chang_zheng_5_hao_jian_jie",
+                {
+                    "type": "infocard",
+                    "iframeUrl": "https://baike.baidu.com/item/%E9%95%BF%E5%BE%81%E4%BA%94%E5%8F%B7%E7%B3%BB%E5%88%97%E8%BF%90%E8%BD%BD%E7%81%AB%E7%AE%AD/12006248?fr=aladdin"
+                }
+            ],
+            [
+                "chang_e_5_hao_jian_jie",
+                {
+                    "type": "infocard",
+                    "iframeUrl": "https://baike.baidu.com/item/%E5%AB%A6%E5%A8%A5%E4%BA%94%E5%8F%B7/9026516?fromtitle=%E5%AB%A6%E5%A8%A5%E4%BA%94%E5%8F%B7%E6%8E%A2%E6%B5%8B%E5%99%A8&fromid=15159300"
+                }
+            ],
+            [
+                "wen_chang_jian_jie",
+                {
+                    "type": "infocard",
+                    "iframeUrl": "https://baike.baidu.com/item/%E4%B8%AD%E5%9B%BD%E6%96%87%E6%98%8C%E8%88%AA%E5%A4%A9%E5%8F%91%E5%B0%84%E5%9C%BA/20183072?fromtitle=%E6%96%87%E6%98%8C%E5%8D%AB%E6%98%9F%E5%8F%91%E5%B0%84%E4%B8%AD%E5%BF%83&fromid=4661326&fr=aladdin"
+                }
+            ]
+        ],
+        "particle_effect": {
+            "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/snowflake1.png",
+            "num": 5000,
+            "range": 500,
+            "color": "0xffffff",
+            "sizeAttenuation": true
+        },
+        "auto_guide_list": [
+            {
+                "start": {
+                    "lat": 112,
+                    "lon": 90,
+                    "distance": 100
+                },
+                "end": {
+                    "lat": 149,
+                    "lon": 90,
+                    "distance": 100
+                },
+                "duration": 20000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "lat": 80.0,
+                    "lon": 120.2,
+                    "distance": 100
+                },
+                "end": {
+                    "lat": 118.0,
+                    "lon": -50.0,
+                    "distance": 100
+                },
+                "duration": 12000,
+                "easing": "In"
+            },
+            {
+                "start": {
+                    "lat": 100.0,
+                    "lon": 125.2,
+                    "distance": 100
+                },
+                "end": {
+                    "lat": 74.0,
+                    "lon": -40.0,
+                    "distance": 100
+                },
+                "duration": 12000,
+                "easing": "InOut"
+            }
+        ],
+        "camera_position": {
+                "x": 100,
+                "y": 0,
+                "z": 0
+        }
+    },
+    {
+        "camera_fov": 100,
+        "auto_rotate_speed": 1.0,
+        "enable_auto_rotate": false,
+        "volume": 0.9,
+        "muted": true,
+        "res_urls": [
+            {
+                "type": "image",
+                "res_url": "/react-xrplayer/stars.png",
+                "panoramic_type": "360",
+                "radius": 9500
+            }
+        ],
+        "particle_effect": {
+            "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/snowflake1.png",
+            "num": 5000,
+            "range": 500,
+            "color": "0xffffff",
+            "sizeAttenuation": true
+        },
+        "camera_position": {
+                "x": 0,
+                "y": 0,
+                "z": 100
+        }
+    },
+    {
+        "camera_fov": 100,
+        "auto_rotate_speed": 1.0,
+        "enable_auto_rotate": false,
+        "volume": 0.9,
+        "muted": true,
+        "res_urls": [
+            {
+                "type": "image",
+                "res_url": "/react-xrplayer/stars.png",
+                "panoramic_type": "360",
+                "radius": 7500
+            }
+        ],
+        "particle_effect": {
+            "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/snowflake1.png",
+            "num": 5000,
+            "range": 500,
+            "color": "0xffffff",
+            "sizeAttenuation": true
+        },
+        "auto_guide_list": [
+            {
+                "start": {
+                    "lat": 90,
+                    "lon": 0,
+                    "distance": 150
+                },
+                "end": {
+                    "lat": 55.1,
+                    "lon": 90,
+                    "distance": 3000
+                },
+                "duration": 5000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "t": 0
+                },
+                "end": {
+                    "t": 100
+                },
+                "duration": 5000,
+                "easing": "In"
+            },
+            {
+                "start": {
+                    "lat": 55.1,
+                    "lon": 90,
+                    "distance": 3000
+                },
+                "end": {
+                    "lat": 90,
+                    "lon": 0,
+                    "distance": 150
+                },
+                "duration": 5000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "lat": 90,
+                    "lon": 0,
+                    "distance": 150
+                },
+                "end": {
+                    "lat": 90,
+                    "lon": 180,
+                    "distance": 2700
+                },
+                "duration": 8000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "lat": 90,
+                    "lon": 180,
+                    "distance": 2700
+                },
+                "end": {
+                    "lat": 85,
+                    "lon": 195,
+                    "distance": 3500
+                },
+                "duration": 5000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "t": 0
+                },
+                "end": {
+                    "t": 300
+                },
+                "duration": 5000,
+                "easing": "In"
+            },
+            {
+                "start": {
+                    "lat": 72.62,
+                    "lon": 247.82,
+                    "distance": 1021
+                },
+                "end": {
+                    "lat": 70,
+                    "lon": 10,
+                    "distance": 350
+                },
+                "duration": 5000,
+                "easing": "InOut"
+            },
+            {
+                "start": {
+                    "t": 0
+                },
+                "end": {
+                    "t": 100
+                },
+                "duration": 5000,
+                "easing": "Out"
+            }
+        ],
+        "camera_position": {
+            "x": 0,
+            "y": 0,
+            "z": 300
+        }
+    }
+]

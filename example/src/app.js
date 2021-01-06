@@ -327,12 +327,12 @@ class App extends React.Component {
         let fov = this.xrManager.getCameraFov();
         let startLat = 0, startLon = 180;
         if (this.autoDisplayList.length !== 0) {
-            startLat = this.autoDisplayList[this.autoDisplayList.length - 1].pos1.lat;
-            startLon = this.autoDisplayList[this.autoDisplayList.length - 1].pos1.lon;
+            startLat = this.autoDisplayList[this.autoDisplayList.length - 1].end.lat;
+            startLon = this.autoDisplayList[this.autoDisplayList.length - 1].end.lon;
         }
         this.autoDisplayList.push({
-            pos0: { lat: startLat, lon: startLon, fov: 80, distance: 100 },
-            pos1: { lat: pos.lat, lon: pos.lon, fov: fov, distance: 100 },
+            start: { lat: startLat, lon: startLon, fov: 80, distance: 450 },
+            end: { lat: pos.lat, lon: pos.lon, fov: fov, distance: 450 },
             duration: 5000, easing: TWEEN.Easing.Sinusoidal.InOut,
         })
     }
