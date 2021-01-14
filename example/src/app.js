@@ -38,14 +38,19 @@ class App extends React.Component {
     onXRCreated = (manager) => {
         this.xrManager = manager;
         window.xrManager = manager;
-        this.xrManager.setHotSpots(this.xrConfigure.hot_spot_list, this.xrConfigure.event_list);
-        this.xrManager.toNormalView(5000, 1000);
-        this.xrManager.setModels(this.xrConfigure.model_list);
+
+        this.xrManager.loadConfig(this.xrConfigure);
+
+        // this.xrManager.setHotSpots(this.xrConfigure.hot_spot_list, this.xrConfigure.event_list);
+        // this.xrManager.setModels(this.xrConfigure.model_list);
+        // this.xrManager.setParticleEffectRes(this.xrConfigure.particle_effect);
+        this.xrManager.toNormalView(0, 0);
         this.xrManager.connectCameraControl();
-        this.xrManager.setFovVerticalScope(-90, 90);
+        this.xrManager.setFovVerticalScope(0, 180);
+        this.xrManager.enableKeyControl(true);
         this.xrManager.enableChangeFov(true);
-        this.xrManager.setParticleEffectRes(this.xrConfigure.particle_effect);
-        this.onCameraAnimationSet();
+        this.xrManager.cameraTweenGroup.enableAutoNext(true);
+        // this.onCameraAnimationSet();
     }
 
     onCameraAnimationSet = () => {
@@ -159,8 +164,8 @@ class App extends React.Component {
         spherical.setFromCartesianCoords(position.x, position.y, position.z);
         var phi = spherical.phi;
         var theta = spherical.theta;
-        var lon = 90 - THREE.Math.radToDeg(theta);
-        var lat = 90 - THREE.Math.radToDeg(phi);
+        var lon = THREE.Math.radToDeg(theta);
+        var lat = THREE.Math.radToDeg(phi);
         alert(`fov:${fov}\nposition:\nx:${position.x}\ny:${position.y}\nz:${position.z}
              \nlon:${lon},lat:${lat}`)
     }
@@ -184,18 +189,18 @@ class App extends React.Component {
     onCreateTextBox = () => {
         let textBox = new EmbeddedTextBox('box1');
         // textBox.setText('helloooooooooooooooooooooo');
-        textBox.setPosition(-30, 0);
+        textBox.setPosition(120, 0);
         this.boxManager = this.xrManager.getEmbeddedBoxManager();
         this.boxManager.addEmbeddedBox(textBox);
 
         let imageBox = new EmbeddedImageBox('box2');
-        imageBox.setImage(process.env.PUBLIC_URL+'/logo192.png', 192, 192);
-        imageBox.setPosition(0, 45);
+        imageBox.setImage(process.env.PUBLIC_URL + '/logo192.png', 192, 192);
+        imageBox.setPosition(90, 45);
         this.boxManager.addEmbeddedBox(imageBox);
 
         let videoBox = new EmbeddedVideoBox('box3');
-        videoBox.setVideo(process.env.PUBLIC_URL+'/shuttle.mp4', 426, 240);
-        videoBox.setPosition(0, 120);
+        videoBox.setVideo(process.env.PUBLIC_URL + '/shuttle.mp4', 426, 240);
+        videoBox.setPosition(90, 120);
         // videoBox.setEnableAutoDisplay(true);
         this.boxManager.addEmbeddedBox(videoBox);
     }
@@ -208,17 +213,19 @@ class App extends React.Component {
 
         let textBox = this.boxManager.getEmbeddedBox('box1');
         textBox && textBox.setTextSize('large');
+        textBox && textBox.setDraggable(true);
         /*textBox.onClick(() => {
             console.log("点击了标签");
         });*/
         this.xrManager.simpleSetEmbeddedBoxEvent('box1', {
-                type: 'infocard',
-                iframeUrl: "https://gs.ctrip.com/html5/you/place/14.html"
-            });
+            type: 'infocard',
+            iframeUrl: "https://gs.ctrip.com/html5/you/place/14.html"
+        });
 
         let imageBox = this.boxManager.getEmbeddedBox('box2');
-        imageBox.setImage(process.env.PUBLIC_URL+'/logo512.png', 512, 512);
+        imageBox.setImage(process.env.PUBLIC_URL + '/logo512.png', 512, 512);
         imageBox.setDraggable(true);
+        imageBox.setScale(0.3, 0.3);
         this.xrManager.simpleSetEmbeddedBoxEvent('box2', {
             type: 'image',
             imageUrl: "https://pic-cloud-bupt.oss-cn-beijing.aliyuncs.com/5c882ee6443a5.jpg",
@@ -238,44 +245,70 @@ class App extends React.Component {
 
     onShowTextBox = () => {
         let boxManager = this.xrManager.getEmbeddedBoxManager();
+        let boxes = [];
         let textBox = boxManager.getEmbeddedBox('box1');
-        if (!!!textBox) {
-            alert("请先点击“创建文本框”按钮");
-            return;
-        }
-        if (this.TextBoxHidden) {
-            textBox.setVisible(true);
-            this.TextBoxHidden = false;
-        }
-        else {
-            textBox.setVisible(false);
-            this.TextBoxHidden = true;
+        boxes.push(textBox);
+        textBox = boxManager.getEmbeddedBox('box2');
+        boxes.push(textBox);
+        textBox = boxManager.getEmbeddedBox('box3');
+        boxes.push(textBox);
+        for (let textBox of boxes) {
+            if (!!!textBox) {
+                alert("请先点击“创建文本框”按钮");
+                continue;
+            }
+            let visible = textBox.getVisible();
+            if (!visible) {
+                textBox.setVisible(true);
+                this.TextBoxHidden = false;
+            }
+            else {
+                textBox.setVisible(false);
+                this.TextBoxHidden = true;
+            }
         }
     }
 
     onRemoveTextBox = () => {
         let boxManager = this.xrManager.getEmbeddedBoxManager();
-        let textBox = boxManager.getEmbeddedBox('box1');
-        if (!!!textBox) {
+        if (!boxManager.removeEmbeddedBox('box1')) {
             alert("请先点击“创建文本框”按钮");
             return;
         }
-        boxManager.removeEmbeddedBox(textBox);
+        if (!boxManager.removeEmbeddedBox('box2')) {
+            alert("请先点击“创建文本框”按钮");
+            return;
+        }
+        if (!boxManager.removeEmbeddedBox('box3')) {
+            alert("请先点击“创建文本框”按钮");
+        }
     }
 
     onChangeTextBoxType = () => {
-        if (this.textBoxType === '2d') {
-            this.textBoxType = 'embedded';
+        let manager = this.xrManager.getEmbeddedBoxManager();
+        let boxes = [];
+        let boxx = manager.getEmbeddedBox('box1');
+        boxes.push(boxx);
+        boxx = manager.getEmbeddedBox('box2');
+        boxes.push(boxx);
+        boxx = manager.getEmbeddedBox('box3');
+        boxes.push(boxx);
+        for (let box of boxes) {
+            if (!!!box) return;
+            let showType = box.getShowType();
+            if (showType === '2d') {
+                showType = 'embed';
+            }
+            else {
+                showType = '2d';
+            }
+            box.setShowType(showType);
         }
-        else {
-            this.textBoxType = '2d';
-        }
-        this.xrManager.textHelper.setTextBoxType(this.textBoxType);
     }
 
     onSimpleCreateTextBox = () => {
         let simpleBox = this.xrManager.simpleCreateImageBox('textBoxSimple');
-        simpleBox.setImage(process.env.PUBLIC_URL+'/logo512.png', 512, 512);
+        simpleBox.setImage(process.env.PUBLIC_URL + '/logo512.png', 512, 512);
         let boxManager = this.xrManager.getEmbeddedBoxManager();
         boxManager.addEmbeddedBox(simpleBox);
     }
@@ -315,6 +348,10 @@ class App extends React.Component {
         this.xrManager.startCameraTweenGroup();
     }
 
+    debugFunc = () => {
+        let videoBox = this.boxManager.getEmbeddedBox('box3');
+        console.log(videoBox.getPosition())
+    }
 
     render() {
         return (
@@ -363,7 +400,7 @@ class App extends React.Component {
                     <button onClick={this.onShowTextBox}>显示/隐藏文本框</button>
                     <button onClick={this.onChangeTextBox}>修改文本框</button>
                     <button onClick={this.onRemoveTextBox}>移除文本框</button>
-                    {/*<button onClick={this.onChangeTextBoxType}>改变文本框类型</button>*/}
+                    <button onClick={this.onChangeTextBoxType}>改变文本框类型</button>
                     <button onClick={this.onSimpleCreateTextBox}>在相机注视位置创建文本框</button>
                     <button onClick={this.onSimpleChangeTextBox}>修改文本框内容</button>
                     <button onClick={() => { this.xrManager.getAudioPaused() ? this.xrManager.playAudio() : this.xrManager.pauseAudio(); }}>播放/暂停音频</button>
@@ -377,6 +414,7 @@ class App extends React.Component {
                     <button onClick={() => { this.xrManager.stopCameraTweenGroup(); }}>停止</button>
                     <button onClick={this.onPickDirector}>拾取导览点</button>
                     <button onClick={this.onStartAutoDisplay}>开始自动导览</button>
+                    <button onClick={this.debugFunc}>debug</button>
                 </div>
             </div >
         )

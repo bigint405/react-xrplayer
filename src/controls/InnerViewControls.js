@@ -11,6 +11,7 @@ class InnerViewControls {
         this.camera = camera;
         this.isConnected = true;
         this.isUserInteracting = false;     // 标记用户是否正在交互中
+        this.isKeyboardInteracting = false;     // 标记用户是否正在交互中
         this.isPointerInteracting = false;  // 鼠标完全控制模式
         this.onMouseDownMouseX = 0;         // 鼠标点击的初始坐标x
         this.onMouseDownMouseY = 0;         // 鼠标点击的初始坐标y
@@ -20,11 +21,12 @@ class InnerViewControls {
         this.onMouseDownLat = 0;
         this.phi = 0;
         this.theta = 0;
-        this.distance = 10;
+        this.distance = 100;
         this.onPointerDownPointerX = 0;
         this.onPointerDownPointerY = 0;
         this.onPointerDownLon = 0;
         this.onPointerDownLat = 0;
+        this.focus = new THREE.Vector3(0, 0, 0);
 
         // 视野自动旋转
         this.enableAutoRotate = false;          // 是否自动旋转
@@ -34,11 +36,11 @@ class InnerViewControls {
         this.autoRotateDirection = 'left';      // 自动旋转方向，left、right、up、down
 
         // 视野范围
-        this.fovTopEdge = 90;
-        this.fovDownEdge = -90;
+        this.fovTopEdge = 180;
+        this.fovDownEdge = 0;
 
-        this.fovLeftEdge = -90;
-        this.fovRightEdge = 270;
+        this.fovLeftEdge = -180;
+        this.fovRightEdge = 180;
 
         this.enableFovChange = true;        // 是否允许用户调整fov大小
 
@@ -49,22 +51,38 @@ class InnerViewControls {
         this.onKeyDown = false;
         this.onKeyShift = false;
 
-        this.initControlsListener();
-
         //重力交互控件
-        this.orientationControls = new DeviceOrientationControls(this.camera);
+        this.orientationControls = null;
         this.orientationEnable = false;
+
+        this.initControlsListener();
+        this.initSphericalData();
     }
 
     /******************************对外接口************************* */
 
+    // 设置位置焦点（lat和lon控制位置的基础，target并不会变）
+    setFocus = (focus) => {
+        this.focus.x = focus.x;
+        this.focus.y = focus.y;
+        this.focus.z = focus.z;
+        this.initSphericalData();
+    }
+
+    // 设置相机关注焦点（即target）
+    setTarget = (target) => {
+        this.camera.target = target;
+    }
+
     // 相机控制器开关
     connect = () => {
         this.isConnected = true;
+        this.initControlsListener();
         this.initSphericalData();
     };
     disConnect = () => {
         this.isConnected = false;
+        this.removeControlsListener();
     };
 
     // 方向传感器开关
@@ -73,12 +91,18 @@ class InnerViewControls {
     }
     enableOrientationControls = () => {
         if (this.orientationEnable === false) {
+            if (this.orientationControls == null) {
+                this.orientationControls = new DeviceOrientationControls(this.camera);
+            }
             this.orientationControls.connect(THREE.MathUtils.degToRad(this.lon - 90));
             this.orientationEnable = true;
         }
     }
     disableOrientationControls = () => {
         if (this.orientationEnable === true) {
+            if (this.orientationControls == null) {
+                this.orientationControls = new DeviceOrientationControls(this.camera);
+            }
             this.orientationControls.disConnect();
             this.orientationEnable = false;
             this.initSphericalData();
@@ -95,6 +119,9 @@ class InnerViewControls {
     setAutoRotateSpeed = (speed) => {
         this.autoRotateSpeed = speed;
         this.getRotateAngle();
+    }
+    getAutoRotateSpeed = () => {
+        return this.autoRotateSpeed;
     }
     setAutoRotateDirection = (direction) => {
         this.autoRotateDirection = direction;
@@ -131,6 +158,21 @@ class InnerViewControls {
         this.camera.position.set(x, y, z);
         this.initSphericalData();
     }
+    getCameraLatLonFovDisPosition = () => {
+        return {
+            lat: this.lat,
+            lon: this.lon,
+            fov: this.camera.fov,
+            distance: this.distance
+        }
+    }
+    setCameraLatLonFovPosition = (lat, lon, fov, distance) => {
+        this.lat = lat;
+        this.lon = lon;
+        this.camera.fov = fov;
+        this.distance = distance;
+        this.updateCameraPosition();
+    }
 
     // 相机FOV接口
     getCameraFov = () => {
@@ -145,39 +187,58 @@ class InnerViewControls {
         this.enableFovChange = enable;
     }
 
+    // 键盘控制开关
+    enableKeyControl = (enable) => {
+        if (enable) {
+            document.addEventListener('keydown', this.onDocumentKeyDown, false);
+            document.addEventListener('keyup', this.onDocumentKeyUp, false);
+        } else {
+            document.removeEventListener('keydown', this.onDocumentKeyDown, false);
+            document.removeEventListener('keyup', this.onDocumentKeyUp, false);
+        }
+    }
+
     /*******************************内部方法实现******************************** */
 
     // 将初始化的直角坐标转化为控制所需要的球体坐标数据
     initSphericalData = () => {
         const spherical = new THREE.Spherical();
         const position = this.camera.position;
-        spherical.setFromCartesianCoords(position.x, position.y, position.z);
+        spherical.setFromCartesianCoords(position.x - this.focus.x, position.y - this.focus.y, position.z - this.focus.z);
         this.phi = spherical.phi;
         this.theta = spherical.theta;
         this.distance = spherical.radius;
-        this.lon = 90 - THREE.Math.radToDeg(this.theta);
-        this.lat = 90 - THREE.Math.radToDeg(this.phi);
+        this.lon = THREE.Math.radToDeg(this.theta);
+        this.lat = THREE.Math.radToDeg(this.phi);
         return { lat: this.lat, lon: this.lon };
     };
 
     initControlsListener = () => {
-        this.browser = window.navigator.userAgent.toLowerCase();
         const container = document.getElementById('xr-container')
-        if (this.browser.indexOf('mobile') > 0) {
-            container.addEventListener('touchstart', this.onTouchstart, false);
-            container.addEventListener('touchmove', this.onTouchmove, false);
-            container.addEventListener('touchend', this.onTouchend, false);
-            container.addEventListener('wheel', this.onDocumentMouseWheel, false);
-        } else {
-            container.addEventListener('mousedown', this.onDocumentMouseDown, false);
-            container.addEventListener('mousemove', this.onDocumentMouseMove, false);
-            container.addEventListener('mouseup', this.onDocumentMouseUp, false);
-            container.addEventListener('wheel', this.onDocumentMouseWheel, false);
-            //添加键盘监听
-            document.addEventListener('keydown', this.onDocumentKeyDown, false);
-            document.addEventListener('keyup', this.onDocumentKeyUp, false);
-        }
+        this.isUserInteracting = false;
+        container.addEventListener('touchstart', this.onTouchstart, false);
+        container.addEventListener('touchmove', this.onTouchmove, false);
+        container.addEventListener('touchend', this.onTouchend, false);
+        container.addEventListener('wheel', this.onDocumentMouseWheel, false);
+
+        container.addEventListener('mousedown', this.onDocumentMouseDown, false);
+        container.addEventListener('mousemove', this.onDocumentMouseMove, false);
+        container.addEventListener('mouseup', this.onDocumentMouseUp, false);
+        container.addEventListener('wheel', this.onDocumentMouseWheel, false);
     };
+
+    removeControlsListener = () => {
+        const container = document.getElementById('xr-container')
+        container.removeEventListener('touchstart', this.onTouchstart, false);
+        container.removeEventListener('touchmove', this.onTouchmove, false);
+        container.removeEventListener('touchend', this.onTouchend, false);
+        container.removeEventListener('wheel', this.onDocumentMouseWheel, false);
+
+        container.removeEventListener('mousedown', this.onDocumentMouseDown, false);
+        container.removeEventListener('mousemove', this.onDocumentMouseMove, false);
+        container.removeEventListener('mouseup', this.onDocumentMouseUp, false);
+        container.removeEventListener('wheel', this.onDocumentMouseWheel, false);
+    }
 
     update = () => {
         if (!this.isConnected) {
@@ -193,47 +254,51 @@ class InnerViewControls {
             this.orientationControls.update(this.distance);
             return;
         }
-        if (this.isUserInteracting) {
-            var dLon = 2;
-            var dLat = 2;
+        if (this.isKeyboardInteracting) {
+            var dLon = 1;
+            var dLat = 1;
             if (this.onKeyShift) {
-                dLon = 10;
-                dLat = 10;
+                dLon = 5;
+                dLat = 5;
             }
             if (this.onKeyLeft) {
-                this.lon -= dLon;
-            }
-            if (this.onKeyRight) {
                 this.lon += dLon;
             }
+            if (this.onKeyRight) {
+                this.lon -= dLon;
+            }
             if (this.onKeyUp) {
-                this.lat -= dLat;
+                this.lat += dLat;
             }
             if (this.onKeyDown) {
-                this.lat += dLat;
+                this.lat -= dLat;
             }
             this.updateCameraPosition();
         } else if (this.enableAutoRotate) {
             this.autoRotate();
+        } else if (this.isUserInteracting) {
+            this.updateCameraPosition();
         }
         this.camera.lookAt(this.camera.target);
     };
 
     updateCameraPosition = () => {
-        if (this.fovLeftEdge !== -90 || this.fovRightEdge !== 270) { // 对水平fov做了限制
+        // 对水平fov做了限制
+        if (this.fovLeftEdge !== -180 || this.fovRightEdge !== 180) {
             this.lon = Math.max(this.fovLeftEdge, Math.min(this.fovRightEdge, this.lon));
         }
-        if (this.fovDownEdge !== -90 || this.fovTopEdge !== 90) {// 对垂直fov做了限制
-            this.lat = Math.max(this.fovDownEdge, Math.min(this.fovTopEdge, this.lat));
+        this.lat = Math.max(this.fovDownEdge, Math.min(this.fovTopEdge, this.lat));
+        if (this.lon > 180) {
+            this.lon = this.lon - 360;
+        } else if (this.lon < -180) {
+            this.lon = 360 + this.lon;
         }
-        this.phi = THREE.Math.degToRad(90 - this.lat);
+        this.phi = THREE.Math.degToRad(this.lat);
         this.theta = THREE.Math.degToRad(this.lon);
-        // console.log('lat:', this.lat, ',lon:', this.lon, "phi:", this.phi, ",theta:", this.theta);
-        // console.log('fov', this.camera.fov);
         // 球坐标系与直角坐标系的转换
-        this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
-        this.camera.position.y = this.distance * Math.cos(this.phi);
-        this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
+        this.camera.position.x = this.focus.x + this.distance * Math.sin(this.phi) * Math.sin(this.theta);
+        this.camera.position.y = this.focus.y + this.distance * Math.cos(this.phi);
+        this.camera.position.z = this.focus.z + this.distance * Math.sin(this.phi) * Math.cos(this.theta);
     }
 
     autoRotate = () => {
@@ -249,11 +314,11 @@ class InnerViewControls {
                 break;
             case 'up':
                 this.phi += this.autoRotateAngle;
-                this.lat = 90 - THREE.Math.radToDeg(this.phi);
+                this.lat = THREE.Math.radToDeg(this.phi);
                 break;
             case 'down':
                 this.phi -= this.autoRotateAngle;
-                this.lat = 90 - THREE.Math.radToDeg(this.phi);
+                this.lat = THREE.Math.radToDeg(this.phi);
                 break;
             default: break;
         }
@@ -279,14 +344,14 @@ class InnerViewControls {
     }
 
     onDocumentMouseMove = (event) => {
-        if (this.isUserInteracting === true) {
+        if (this.isUserInteracting === true && this.isConnected === true) {
             if (this.isPointerInteracting) {
                 this.lon = event.movementX * 0.1 + this.lon;
                 this.lat = event.movementY * 0.1 + this.lat;
             } else {
                 // 在鼠标Down位置叠加偏移量
-                this.lon = (this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
-                this.lat = (this.onPointerDownPointerY - event.clientY) * 0.1 + this.onPointerDownLat;
+                this.lon = -(this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
+                this.lat = -(this.onPointerDownPointerY - event.clientY) * 0.1 + this.onPointerDownLat;
             }
             // 用于立体场景音效
             // mouseActionLocal([lon, lat]);
@@ -313,8 +378,8 @@ class InnerViewControls {
     onTouchmove = (event) => {
         if (this.isUserInteracting === true) {
             var touch = event.targetTouches[0];
-            this.lon = (parseFloat(this.onPointerDownPointerX) - touch.pageX) * 0.2 + this.onPointerDownLon;
-            this.lat = (parseFloat(this.onPointerDownPointerY - touch.pageY)) * 0.2 + this.onPointerDownLat;
+            this.lon = -(parseFloat(this.onPointerDownPointerX) - touch.pageX) * 0.2 + this.onPointerDownLon;
+            this.lat = -(parseFloat(this.onPointerDownPointerY - touch.pageY)) * 0.2 + this.onPointerDownLat;
             // 用于立体场景音效
             // mouseActionLocal([lon, lat]);
         }
@@ -342,7 +407,7 @@ class InnerViewControls {
     onDocumentKeyDown = (event) => {
         event.preventDefault();
         var keyCode = event.keyCode || event.which || event.charCode;
-        this.setInteractingIfKeys(keyCode, true);
+        this.setKeyboardInteractingIfKeys(keyCode, true);
         switch (keyCode) {
             case 65: /*a*/
             case 37: /*left*/ this.onKeyLeft = true; this.onKeyRight = false;
@@ -374,7 +439,7 @@ class InnerViewControls {
         }
     }
 
-    setInteractingIfKeys = (keyCode, interacting) => {
+    setKeyboardInteractingIfKeys = (keyCode, interacting) => {
         if (this.isPointerInteracting) {
             return
         }
@@ -388,7 +453,7 @@ class InnerViewControls {
             case 83: /*s*/
             case 40: /*down*/
             case 16: /*Shift*/
-                this.isUserInteracting = interacting;
+                this.isKeyboardInteracting = interacting;
                 break;
             default: break;
         }
@@ -396,7 +461,7 @@ class InnerViewControls {
 
     onDocumentKeyUp = (event) => {
         var keyCode = event.keyCode || event.which || event.charCode;
-        this.setInteractingIfKeys(keyCode, false)
+        this.setKeyboardInteractingIfKeys(keyCode, false)
         switch (keyCode) {
 
             case 65: /*a*/
