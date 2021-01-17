@@ -20,9 +20,6 @@ class CameraTween {
         this.reset = cameraControl.initSphericalData;        //动画结束后视角停在结束的位置，不会回到之前的位置
         this.started = false;               //在start之后stop之前调用start会导致不会调用onStop，无法使用相机控制
 
-        this.startTime = 0;
-        this.endTime = 0;
-
         this.posType = 0;                   // 0 表示都不用， 1 采用xyz， 2 采用经纬度
         this.fovChange = false;             //是否涉及fov的改变
         this.disChange = false;             //是否涉及distance的改变
