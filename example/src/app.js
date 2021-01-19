@@ -6,6 +6,9 @@ import * as THREE from 'three';
 import EmbeddedTextBox from "../../src/display/ResourceBox/EmbeddedResource/EmbeddedTextBox";
 import EmbeddedImageBox from "../../src/display/ResourceBox/EmbeddedResource/EmbeddedImageBox";
 import EmbeddedVideoBox from "../../src/display/ResourceBox/EmbeddedResource/EmbeddedVideoBox";
+import EventBus from "../../src/event/EventBus";
+import Events from "../../src/event/Events";
+
 class App extends React.Component {
 
     state = {
@@ -335,7 +338,14 @@ class App extends React.Component {
     }
 
     debugFunc = () => {
-        console.log(this.xrManager.getDirectorNames());
+        EventBus.trigger(Events.EVENT_POP_EFFECT_PANEL, {
+            name: "image",
+            props: {data:{
+                    type: "image",
+                    imageUrl: "https://pic-cloud-bupt.oss-cn-beijing.aliyuncs.com/5c882ee6443a5.jpg",
+                    jumpUrl: "http://www.youmuvideo.com"
+                }}
+        });
     }
 
 

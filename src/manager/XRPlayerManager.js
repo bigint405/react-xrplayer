@@ -225,9 +225,8 @@ class XRPlayerManager {
         if (config.hasOwnProperty('muted')) {
             this.setGlobalMuted(config.muted);
         }
-        if (config.hasOwnProperty('hot_spot_list')
-            && config.hasOwnProperty('event_list')) {
-            this.setHotSpots(config.hot_spot_list, config.event_list);
+        if (config.hasOwnProperty('hot_spot_list')) {
+            this.setHotSpots(config.hot_spot_list);
         }
         if (config.hasOwnProperty('particle_effect')) {
             this.setParticleEffectRes(config.particle_effect);
@@ -350,36 +349,21 @@ class XRPlayerManager {
     /****************************热点标签相关控制接口************************* */
     resetHotSpotsData = () => {
         if (!this.spriteShapeHelper) {
-            this.spriteEventList = new Map();
             this.spriteShapeHelper = new SpriteShapeHelper(this.scene,
                 this.camera, this.renderer, this.mount);
         } else {
-            this.spriteEventList.clear();
+            this.spriteShapeHelper.resetHotSpotGroup();
         }
     }
 
-    setHotSpots = (hot_spot_list, event_list) => {
+    setHotSpots = (hot_spot_list) => {
         this.resetHotSpotsData();
-        this.spriteEventList = new Map(event_list);
         this.spriteShapeHelper.setHotSpotList(hot_spot_list);
-        this.spriteShapeHelper.objectClickHandler = (intersects) => {
-            const key = intersects[0].object.name;
-            this.emitEvent(key, () => {
-                this.closeEffectContainer();
-            })
-        }
-        this.spriteShapeHelper.tagClickHandler = (key) => {
-            this.emitEvent(key, () => {
-                this.closeEffectContainer();
-            })
-        }
     }
 
     addHotSpot = (hot_spot, event) => {
         this.spriteShapeHelper.addHotSpot(hot_spot);
-        if (event != null && !this.spriteEventList.has(event.key)) {
-            this.spriteEventList.set(event.key, event.value);
-        }
+        this.spriteShapeHelper.addEvent(event);
     }
 
     removeHotSpot = (hot_spot_key) => {
@@ -958,8 +942,8 @@ class XRPlayerManager {
         const l = this.playingCameraTweenGroup.cameraTweens.length;
         if (l > 1) {
             let name = null;
-            if (this.playingCameraTweenGroup.cameraTweens[l - 1].pos0.hasOwnProperty('name')) {
-                name = this.playingCameraTweenGroup.cameraTweens[l - 1].pos0.name;
+            if (this.playingCameraTweenGroup.cameraTweens[l - 1].pos1.hasOwnProperty('name')) {
+                name = this.playingCameraTweenGroup.cameraTweens[l - 1].pos1.name;
             }
             names.push(name);
         }
