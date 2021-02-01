@@ -257,8 +257,9 @@ class XRPlayerManager {
         // TODO 需要从状态中读取,即需要解决一致性问题
         config.volume = this.senceConfig.volume;
         config.muted = this.senceConfig.muted;
-        config.hot_spot_list = this.senceConfig.hot_spot_list;
-        config.event_list = this.senceConfig.event_list;
+
+        config.hot_spot_list = this.spriteShapeHelper.exportConfig();
+
         config.model_list = this.senceConfig.model_list;
         config.particle_effect = this.senceConfig.particle_effect;
         config.auto_guide_list = this.senceConfig.auto_guide_list;
@@ -362,8 +363,7 @@ class XRPlayerManager {
     }
 
     addHotSpot = (hot_spot, event) => {
-        this.spriteShapeHelper.addHotSpot(hot_spot);
-        this.spriteShapeHelper.addEvent(event);
+        return this.spriteShapeHelper.addHotSpot(hot_spot, event);
     }
 
     removeHotSpot = (hot_spot_key) => {

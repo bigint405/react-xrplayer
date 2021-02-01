@@ -30,16 +30,21 @@ class SpriteShapeHelper {
     initHandler = () => {
         this.objectClickHandler = (intersects) => {
             const key = intersects[0].object.name;
-            if (this.eventMap && this.eventMap.has(key)) {
-                const data = this.eventMap.get(key);
-                EventBus.trigger(data.type, data.props);
+            if (this.hotSpotMap && this.hotSpotMap.has(key)) {
+                let hotSpot = this.hotSpotMap.get(key);
+                let event = hotSpot.event;
+                if (event) {
+                    EventBus.trigger(event.type, event.props);
+                }
             }
         };
         this.tagClickHandler = (key) => {
-            if (this.eventMap && this.eventMap.has(key)) {
-                const data = this.eventMap.get(key);
-                console.log(data)
-                EventBus.trigger(data.type, data.props);
+            if (this.hotSpotMap && this.hotSpotMap.has(key)) {
+                let hotSpot = this.hotSpotMap.get(key);
+                let event = hotSpot.event;
+                if (event) {
+                    EventBus.trigger(event.type, event.props);
+                }
             }
         }
     }
@@ -85,34 +90,38 @@ class SpriteShapeHelper {
     setHotSpotList = (hot_spot_list) => {
         this.resetHotSpotGroup();
         this.hotSpotMap = new Map();
-        this.eventMap = new Map();
+        // this.eventMap = new Map();
         hot_spot_list.forEach((spot) => {
             this.hotSpotMap.set(spot.key, spot.props);
-            this.eventMap.set(spot.key, spot.event);
         });
         this.hotSpotMap.forEach((value, key) => {
             this.createPoint(key, value)
         });
     }
 
-    setEventList = (eventList) => {
-        this.eventMap = new Map(eventList);
-        console.log('event_map')
-        console.log(this.eventMap)
-    }
+    // setEventList = (eventList) => {
+    //     this.eventMap = new Map(eventList);
+    //     console.log('event_map')
+    //     console.log(this.eventMap)
+    // }
 
-    addHotSpot = (hot_spot) => {
+    addHotSpot = (hot_spot, event) => {
         if (!this.pointGroup) {
             this.resetHotSpotGroup();
         }
-        this.createPoint(hot_spot.key, hot_spot.value)
+        this.hotSpotMap || (this.hotSpotMap = new Map());
+        if (!!!hot_spot.value) return false;
+        hot_spot.value.event = event;
+        this.hotSpotMap.set(hot_spot.key, hot_spot.value);
+        this.createPoint(hot_spot.key, hot_spot.value);
+        return true;
     }
 
-    addEvent = (event) => {
-        if (event && !this.eventMap.has(event.key)) {
-            this.eventMap.set(event.key, event.value);
-        }
-    }
+    // addEvent = (event) => {
+    //     if (event && !this.eventMap.has(event.key)) {
+    //         this.eventMap.set(event.key, event.value);
+    //     }
+    // }
 
     /**
      * 清空场景中的所有热点标签
@@ -127,6 +136,7 @@ class SpriteShapeHelper {
                 this.container.removeChild(div);
             }
         });
+        this.hotSpotMap = new Map();
     }
 
     removeHotSpot = (hot_spot_key) => {
@@ -134,6 +144,22 @@ class SpriteShapeHelper {
         if (mesh) {
             this.pointGroup.remove(mesh);
         }
+        this.hotSpotMap.delete(hot_spot_key);
+        this.hotSpotMap && (this.hotSpotMap.delete(hot_spot_key));
+    }
+
+    /**
+     * @function
+     * @name SpriteShapeHelper#exportConfig
+     * @description 导出热点标签配置信息
+     */
+    exportConfig = () => {
+        if (!!!this.hotSpotMap) return [];
+        let config = [];
+        this.hotSpotMap.forEach((value, key) => {
+            config.push({key: key, props: value});
+        });
+        return config;
     }
 
     convertSph2Rect = (lat, lon) => {

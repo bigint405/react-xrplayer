@@ -93,24 +93,28 @@ class App extends React.Component {
 
     onAddHotSpot = () => {
         this.xrManager.addHotSpot({
-            key: `infocard`,
+            key: 'infocard_test',
             value: {
-                lat: - 90, lon: -10,
+                lat: 90, lon: 0,
                 res_url: 'https://live360.oss-cn-beijing.aliyuncs.com/xr/icons/hotspot_video.png'
             }
         }, {
-            key: `infocard`,
-            value: {
-                id: 'infocard',
-                type: 'infocard',
-                iframeUrl: "https://gs.ctrip.com/html5/you/place/14.html"
+            type: "event_pop_effect_panel",
+            props: {
+                name: "infocard",
+                props: {
+                    data: {
+                        type: "infocard",
+                        iframeUrl: "https://gs.ctrip.com/html5/you/place/14.html"
+                    }
+                }
             }
-        })
+        });
         alert(`添加了一个热点标签`)
     }
 
     onRemoveHotSpot = () => {
-        this.xrManager.removeHotSpot('infocard')
+        this.xrManager.removeHotSpot('infocard_test')
         alert(`移除了一个热点标签`);
     }
 
@@ -338,14 +342,7 @@ class App extends React.Component {
     }
 
     debugFunc = () => {
-        EventBus.trigger(Events.EVENT_POP_EFFECT_PANEL, {
-            name: "image",
-            props: {data:{
-                    type: "image",
-                    imageUrl: "https://pic-cloud-bupt.oss-cn-beijing.aliyuncs.com/5c882ee6443a5.jpg",
-                    jumpUrl: "http://www.youmuvideo.com"
-                }}
-        });
+        console.log(this.xrManager.exportConfig());
     }
 
 
